@@ -12,20 +12,25 @@ type Player = {
 type room = {
   roomId: string;
   playersLimit: number;
-  wordToGuess: string;
+  wordToGuess: {
+    word: string;
+    translation: string;
+    original: string;
+  };
   vacant: boolean;
   private: boolean;
   roundTime: number;
   creator: string;
   inGame: boolean;
+  language: string;
   players: Player[];
 };
 type roomPayload = {
   privateRoom: boolean;
   playersLimit: number;
   wordToGuess: string;
-  randomWord: boolean;
   roundTime: number;
+  language: string;
   author: {
     name: string;
     id: string;
@@ -34,9 +39,10 @@ type roomPayload = {
 
 export default (io: any, socket: any, rooms: any) => {
   const create = (payload: roomPayload, callback: any) => {
-    const wordToGuess = payload.randomWord
-      ? words[Math.floor(Math.random() * words.length)]
-      : payload.wordToGuess;
+    const wordToGuess =
+      words[payload.language][
+        Math.floor(Math.random() * words[payload.language].length)
+      ];
 
     if (payload.privateRoom) {
       const room: room = {
@@ -46,13 +52,14 @@ export default (io: any, socket: any, rooms: any) => {
             name: payload.author.name,
             id: payload.author.id,
             socketId: socket.id,
-            guessedLetters: payload.randomWord ? [] : wordToGuess.split(""),
+            guessedLetters: [],
             score: 0,
           },
         ],
         creator: payload.author.id,
         playersLimit: payload.playersLimit,
         wordToGuess: wordToGuess,
+        language: payload.language,
         inGame: false,
         roundTime: payload.roundTime * 60,
         vacant: true,
@@ -71,11 +78,12 @@ export default (io: any, socket: any, rooms: any) => {
             name: payload.author.name,
             id: payload.author.id,
             socketId: socket.id,
-            guessedLetters: payload.randomWord ? [] : wordToGuess.split(""),
+            guessedLetters: [],
             score: 0,
           },
         ],
         creator: payload.author.id,
+        language: payload.language,
         playersLimit: payload.playersLimit,
         inGame: false,
         wordToGuess: wordToGuess,
@@ -98,9 +106,11 @@ export default (io: any, socket: any, rooms: any) => {
     const room = rooms[index];
     if (index >= 0) {
       if (!room.vacant) return callback({ error: "room is full" });
-
-      if (room.players.find((player: any) => player.id === payload.id))
+      if (room.players.find((player: any) => player.id === payload.id)) {
+        io.to(room.roomId).emit("room:getById", room);
+        room.vacant = room.playersLimit === room.players.length ? false : true;
         return callback(null);
+      }
 
       room.players.push({
         name: payload.name,
@@ -110,6 +120,7 @@ export default (io: any, socket: any, rooms: any) => {
         score: 0,
       });
       room.vacant = room.playersLimit === room.players.length ? false : true;
+
       socket.join(room.roomId);
       rooms[index] = room;
       io.to(room.roomId).emit("room:get", room);
@@ -128,6 +139,8 @@ export default (io: any, socket: any, rooms: any) => {
     if (index >= 0) {
       rooms[index] = payload;
       io.to(payload.roomId).emit("room:get", payload);
+      io.to(payload.roomId).emit("room:getById", payload);
+      socket.emit("getRooms", rooms);
     }
   };
 
@@ -136,12 +149,24 @@ export default (io: any, socket: any, rooms: any) => {
     io.to(id).emit("room:getById", room);
   };
 
-  const playerLeft = ({ room, name }: { room: room; name: string }) => {
-    io.to(room.roomId).emit("room:getById", room);
-    io.to(room.roomId).emit("room:playerDisconnected", name);
+  const playerLeft = ({ roomId, name }: { roomId: string; name: string }) => {
+    io.to(roomId).emit("room:playerDisconnected", name);
   };
-
-  socket.on("getRooms", () => socket.emit("getRooms", rooms));
+  const removeRoom = (roomId: string) => {
+    const index = rooms.findIndex((room: any) => room.roomId === roomId);
+    if (index !== -1) {
+      rooms.splice(index, 1);
+      io.emit("getRooms", rooms);
+      io.to(roomId).emit("roomHasClosed");
+    }
+  };
+  socket.on("getRooms", () => {
+    socket.emit("getRooms", rooms);
+  });
+  socket.on("startTheGame", (roomId: string) =>
+    io.to(roomId).emit("startTheGame")
+  );
+  socket.on("room:leave", removeRoom);
   socket.on("room:getById", getById);
   socket.on("room:create", create);
   socket.on("room:join", join);

@@ -29,8 +29,8 @@ io.on("connection", (socket) => {
     room.players = room.players.filter(
       (player: any) => player.socketId !== socket.id
     );
-
     rooms[roomId] = room;
+    if (room.players.length === 0) rooms.splice(roomId, 1);
     io.to(room.roomId).emit("room:getById", room);
     io.to(room.roomId).emit("room:playerDisconnected", player.name);
   });

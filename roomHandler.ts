@@ -38,6 +38,18 @@ type roomPayload = {
 };
 
 export default (io: any, socket: any, rooms: any) => {
+  const removeRoom = (roomId: string) => {
+    const index = rooms.findIndex((room: any) => room.roomId === roomId);
+    if (index !== -1) {
+      rooms.splice(index, 1);
+      io.emit("getRooms", rooms);
+      io.to(roomId).emit("roomHasClosed");
+    }
+  };
+  //15 minutes in milliseconds
+  //60 * 15 * 1000 = 900 000
+  const roomTimeout = (roomId: string) =>
+    setTimeout(() => removeRoom(roomId), 900000);
   const create = (payload: roomPayload, callback: any) => {
     const wordToGuess =
       words[payload.language][
@@ -70,6 +82,7 @@ export default (io: any, socket: any, rooms: any) => {
       socket.join(room.roomId);
       io.to(room.roomId).emit("room:get", room);
       callback(null, room.roomId);
+      roomTimeout(room.roomId);
     } else {
       const room: room = {
         roomId: `public-${nanoid(10)}`,
@@ -96,6 +109,7 @@ export default (io: any, socket: any, rooms: any) => {
       socket.join(room.roomId);
       io.to(room.roomId).emit("room:get", room);
       callback(null, room.roomId);
+      roomTimeout(room.roomId);
     }
   };
 
@@ -152,14 +166,7 @@ export default (io: any, socket: any, rooms: any) => {
   const playerLeft = ({ roomId, name }: { roomId: string; name: string }) => {
     io.to(roomId).emit("room:playerDisconnected", name);
   };
-  const removeRoom = (roomId: string) => {
-    const index = rooms.findIndex((room: any) => room.roomId === roomId);
-    if (index !== -1) {
-      rooms.splice(index, 1);
-      io.emit("getRooms", rooms);
-      io.to(roomId).emit("roomHasClosed");
-    }
-  };
+
   socket.on("getRooms", () => {
     socket.emit("getRooms", rooms);
   });

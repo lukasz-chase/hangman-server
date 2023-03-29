@@ -24,11 +24,17 @@ type room = {
   inGame: boolean;
   language: string;
   players: Player[];
+  customWord: boolean;
 };
 type roomPayload = {
   privateRoom: boolean;
   playersLimit: number;
-  wordToGuess: string;
+  customWord: boolean;
+  word: {
+    word: string;
+    translation: string;
+    original: string;
+  };
   roundTime: number;
   language: string;
   author: {
@@ -55,27 +61,30 @@ export default (io: any, socket: any, rooms: any) => {
       words[payload.language][
         Math.floor(Math.random() * words[payload.language].length)
       ];
-
+    const commonRoomValues = {
+      players: [
+        {
+          name: payload.author.name,
+          id: payload.author.id,
+          socketId: socket.id,
+          guessedLetters: [],
+          score: 0,
+        },
+      ],
+      creator: payload.author.id,
+      playersLimit: payload.playersLimit,
+      wordToGuess: payload.customWord ? payload.word : wordToGuess,
+      language: payload.language,
+      inGame: false,
+      roundTime: payload.roundTime * 60,
+      vacant: true,
+      customWord: payload.customWord,
+    };
     if (payload.privateRoom) {
       const room: room = {
         roomId: `private-${nanoid(10)}`,
-        players: [
-          {
-            name: payload.author.name,
-            id: payload.author.id,
-            socketId: socket.id,
-            guessedLetters: [],
-            score: 0,
-          },
-        ],
-        creator: payload.author.id,
-        playersLimit: payload.playersLimit,
-        wordToGuess: wordToGuess,
-        language: payload.language,
-        inGame: false,
-        roundTime: payload.roundTime * 60,
-        vacant: true,
         private: true,
+        ...commonRoomValues,
       };
       rooms.push(room);
       io.emit("getRooms", rooms);
@@ -86,23 +95,8 @@ export default (io: any, socket: any, rooms: any) => {
     } else {
       const room: room = {
         roomId: `public-${nanoid(10)}`,
-        players: [
-          {
-            name: payload.author.name,
-            id: payload.author.id,
-            socketId: socket.id,
-            guessedLetters: [],
-            score: 0,
-          },
-        ],
-        creator: payload.author.id,
-        language: payload.language,
-        playersLimit: payload.playersLimit,
-        inGame: false,
-        wordToGuess: wordToGuess,
-        roundTime: payload.roundTime * 60,
-        vacant: true,
         private: false,
+        ...commonRoomValues,
       };
       rooms.push(room);
       io.emit("getRooms", rooms);

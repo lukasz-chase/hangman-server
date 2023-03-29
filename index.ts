@@ -30,7 +30,12 @@ io.on("connection", (socket) => {
       (player: any) => player.socketId !== socket.id
     );
     rooms[roomId] = room;
-    if (room.players.length === 0) rooms.splice(roomId, 1);
+
+    if (room.players.length === 0 || player.id === room.creator) {
+      rooms.splice(roomId, 1);
+      io.emit("getRooms", rooms);
+      io.to(room.roomId).emit("roomHasClosed");
+    }
     io.to(room.roomId).emit("room:getById", room);
     io.to(room.roomId).emit("room:playerDisconnected", player.name);
   });

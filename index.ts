@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import messagesHandler from "./messagesHandler";
 import roomHandler from "./roomHandler";
 
 dotenv.config();
@@ -16,6 +17,7 @@ const rooms: any = [];
 
 io.on("connection", (socket) => {
   roomHandler(io, socket, rooms);
+  messagesHandler(io, socket, rooms);
   socket.on("disconnect", () => {
     const roomId = rooms.findIndex((room: any) =>
       room.players.find((player: any) => player.socketId === socket.id)

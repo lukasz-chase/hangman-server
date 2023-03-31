@@ -1,30 +1,31 @@
 import dotenv from "dotenv";
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import express, { Application } from "express";
+import { createServer, Server as HTTPServer } from "http";
+import { Server, Socket } from "socket.io";
 import messagesHandler from "./messagesHandler";
 import roomHandler from "./roomHandler";
+import { room } from "./types";
 
 dotenv.config();
-const app = express();
+const app: Application = express();
 
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
+const httpServer: HTTPServer = createServer(app);
+const io: Server = new Server(httpServer, {
   cors: { origin: "*" },
 });
 
-const rooms: any = [];
+const rooms: room[] = [];
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: Socket) => {
   roomHandler(io, socket, rooms);
   messagesHandler(io, socket, rooms);
   socket.on("disconnect", () => {
-    const roomId = rooms.findIndex((room: any) =>
+    const roomId: number = rooms.findIndex((room: room) =>
       room.players.find((player: any) => player.socketId === socket.id)
     );
-    const room = rooms[roomId];
+    const room: room = rooms[roomId];
     if (!room) return;
-    const player = room.players.find(
+    const player: any = room.players.find(
       (player: any) => player.socketId === socket.id
     );
 
@@ -43,5 +44,5 @@ io.on("connection", (socket) => {
   });
 });
 
-const port = process.env.PORT || 8080;
+const port: string | number = process.env.PORT || 8080;
 httpServer.listen(port, () => console.log(`Listening on port ${port}`));

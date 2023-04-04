@@ -78,7 +78,7 @@ export default (io: any, socket: any, rooms: room[]) => {
     rooms.push(newRoom);
     io.emit("getRooms", rooms);
     socket.join(roomId);
-    io.to(roomId).emit("room:get", newRoom);
+    io.to(roomId).emit("room:getById", newRoom);
     callback(null, roomId);
     roomTimeout(roomId);
     roomHalfwayTimeout(roomId);
@@ -105,7 +105,6 @@ export default (io: any, socket: any, rooms: room[]) => {
     room.vacant = room.playersLimit === room.players.length ? false : true;
 
     socket.join(roomId);
-    io.to(roomId).emit("room:get", room);
     io.to(roomId).emit("room:getById", room);
     io.to(roomId).emit("room:playerJoined", name);
     callback(null, room);
@@ -115,7 +114,6 @@ export default (io: any, socket: any, rooms: room[]) => {
     const room = rooms.find((room: room) => room.roomId === roomId);
     if (!room) return new Error("there is no room with that id");
     room.playersInGame.push(id);
-    io.to(roomId).emit("room:get", room);
     io.to(roomId).emit("room:getById", room);
   };
 
@@ -125,7 +123,6 @@ export default (io: any, socket: any, rooms: room[]) => {
     );
     if (index >= 0) {
       rooms[index] = payload;
-      io.to(payload.roomId).emit("room:get", payload);
       io.to(payload.roomId).emit("room:getById", payload);
       socket.emit("getRooms", rooms);
     }

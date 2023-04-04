@@ -33,7 +33,6 @@ export const sendAdminMessage = (
     createdAt: `${currentHour}:${currentMinute}`,
   };
   room?.messages.push(adminMessage);
-  io.to(roomId).emit("room:get", room);
   io.to(roomId).emit("room:getById", room);
 };
 

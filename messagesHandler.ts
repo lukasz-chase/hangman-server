@@ -7,7 +7,6 @@ export default (io: any, socket: any, rooms: any) => {
 
     room.messages.push(message);
 
-    io.to(roomId).emit("room:get", room);
     io.to(roomId).emit("room:getById", room);
   };
 

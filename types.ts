@@ -4,6 +4,7 @@ export type Player = {
   socketId: string;
   guessedLetters: string[];
   score: number;
+  connectedToRoom: boolean;
 };
 export type Message = {
   playerName: string;
@@ -29,6 +30,7 @@ export type room = {
   language: string;
   players: Player[];
   messages: Message[];
+  playersInGame: string[];
   customWord: boolean;
 };
 export type roomPayload = {

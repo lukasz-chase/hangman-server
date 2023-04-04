@@ -16,6 +16,27 @@ const io: Server = new Server(httpServer, {
 
 const rooms: room[] = [];
 
+export const sendAdminMessage = (
+  message: string,
+  type: string,
+  roomId: string
+) => {
+  const room = rooms.find((room: room) => room.roomId === roomId);
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes().toString().padStart(2, "0");
+  const adminMessage = {
+    playerName: "Admin",
+    playerAvatar: "",
+    playerId: `admin-${type}`,
+    message: message,
+    createdAt: `${currentHour}:${currentMinute}`,
+  };
+  room?.messages.push(adminMessage);
+  io.to(roomId).emit("room:get", room);
+  io.to(roomId).emit("room:getById", room);
+};
+
 io.on("connection", (socket: Socket) => {
   roomHandler(io, socket, rooms);
   messagesHandler(io, socket, rooms);
@@ -40,6 +61,7 @@ io.on("connection", (socket: Socket) => {
       io.to(room.roomId).emit("roomHasClosed");
     }
     io.to(room.roomId).emit("room:getById", room);
+    sendAdminMessage(`${player.name} has left`, "error", room.roomId);
     io.to(room.roomId).emit("room:playerDisconnected", player.name);
   });
 });

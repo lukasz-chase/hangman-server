@@ -41,20 +41,23 @@ io.on("connection", (socket: Socket) => {
   messagesHandler(io, socket, rooms);
   socket.on("disconnect", () => {
     const roomId: number = rooms.findIndex((room: room) =>
-      room.players.find((player: any) => player.socketId === socket.id)
+      room.rounds[room.currentRound].players.find(
+        (player: any) => player.socketId === socket.id
+      )
     );
     const room: room = rooms[roomId];
+    const currentRoom = room?.rounds[room.currentRound];
     if (!room) return;
-    const player: any = room.players.find(
+    const player: any = currentRoom.players.find(
       (player: any) => player.socketId === socket.id
     );
 
-    room.players = room.players.filter(
+    currentRoom.players = currentRoom.players.filter(
       (player: any) => player.socketId !== socket.id
     );
     rooms[roomId] = room;
 
-    if (room.players.length === 0 || player.id === room.creator) {
+    if (currentRoom.players.length === 0 || player.id === room.creator) {
       rooms.splice(roomId, 1);
       io.emit("getRooms", rooms);
       io.to(room.roomId).emit("roomHasClosed");

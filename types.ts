@@ -1,10 +1,17 @@
 export type Player = {
   name: string;
   id: string;
+  avatar: string;
   socketId: string;
   guessedLetters: string[];
   score: number;
   connectedToRoom: boolean;
+  hasChosenWord: boolean;
+};
+type WordToGuess = {
+  word: string;
+  translation: string;
+  original: string;
 };
 export type Message = {
   playerName: string;
@@ -13,25 +20,29 @@ export type Message = {
   message: string;
   createdAt: string;
 };
-
-export type room = {
-  roomId: string;
-  playersLimit: number;
-  wordToGuess: {
-    word: string;
-    translation: string;
-    original: string;
-  };
-  vacant: boolean;
-  private: boolean;
-  roundTime: number;
-  creator: string;
-  inGame: boolean;
-  language: string;
+export type Round = {
+  round: number;
+  roundWinner: string;
+  wordToGuessChooser: string;
   players: Player[];
-  messages: Message[];
   playersInGame: string[];
   customWord: boolean;
+  language: string;
+  vacant: boolean;
+  wordToGuess: WordToGuess;
+};
+
+export type room = {
+  playersLimit: number;
+  roomId: string;
+  private: boolean;
+  roundTime: number;
+  rounds: Round[];
+  roundsNumber: number;
+  currentRound: number;
+  creator: string;
+  inGame: boolean;
+  messages: Message[];
 };
 export type roomPayload = {
   privateRoom: boolean;
@@ -43,9 +54,26 @@ export type roomPayload = {
     original: string;
   };
   roundTime: number;
+  roundsNumber: number;
   language: string;
-  author: {
+  creator: {
     name: string;
     id: string;
+    avatar: string;
   };
+};
+export type joinRoomPayload = {
+  roomId: string;
+  player: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+};
+export type setWordToGuessPayload = {
+  roomId: string;
+  customWord: boolean;
+  language: string;
+  wordToGuess: WordToGuess;
+  playerIndex: number;
 };

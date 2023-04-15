@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express, { Application } from "express";
 import { createServer, Server as HTTPServer } from "http";
 import { Server, Socket } from "socket.io";
-import messagesHandler from "./messagesHandler";
+import messagesHandler, { adminMessageTypes } from "./messagesHandler";
 import roomHandler from "./roomHandler";
 import { room } from "./types";
 
@@ -63,7 +63,11 @@ io.on("connection", (socket: Socket) => {
       io.to(room.roomId).emit("roomHasClosed");
     }
     io.to(room.roomId).emit("room:getById", room);
-    sendAdminMessage(`${player.name} has left`, "error", room.roomId);
+    sendAdminMessage(
+      `${player.name} has left`,
+      adminMessageTypes.ERROR,
+      room.roomId
+    );
     io.to(room.roomId).emit("room:playerDisconnected", player.name);
   });
 });

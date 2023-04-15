@@ -22,7 +22,7 @@ export type Message = {
 };
 export type Round = {
   round: number;
-  roundWinner: string;
+  roundWinners: string[];
   wordToGuessChooser: string;
   players: Player[];
   playersInGame: string[];

@@ -7,6 +7,7 @@ import type {
   setWordToGuessPayload,
 } from "./types";
 import { sendAdminMessage } from "./index";
+import { adminMessageTypes } from "./messagesHandler";
 
 //30 minutes in milliseconds
 const roomTimeoutDuration = 18000000;
@@ -29,7 +30,12 @@ export default (io: any, socket: any, rooms: room[]) => {
 
   const roomHalfwayTimeout = (roomId: string) =>
     setTimeout(
-      () => sendAdminMessage("room will close in 5 minutes", "error", roomId),
+      () =>
+        sendAdminMessage(
+          "room will close in 5 minutes",
+          adminMessageTypes.ERROR,
+          roomId
+        ),
       roomTimeoutDuration - 600000
     );
 
@@ -51,7 +57,7 @@ export default (io: any, socket: any, rooms: room[]) => {
       rounds: [
         {
           round: 1,
-          roundWinner: "",
+          roundWinners: [],
           wordToGuessChooser: creator.id,
           players: [
             {
@@ -118,7 +124,7 @@ export default (io: any, socket: any, rooms: room[]) => {
       connectedToRoom: false,
       hasChosenWord: false,
     });
-    sendAdminMessage(`${name} has joined`, "info", roomId);
+    sendAdminMessage(`${name} has joined`, adminMessageTypes.INFO, roomId);
     currentRoom.vacant =
       room.playersLimit === currentRoom.players.length ? false : true;
 
@@ -174,8 +180,17 @@ export default (io: any, socket: any, rooms: room[]) => {
   };
 
   const playerLeft = ({ roomId, name }: { roomId: string; name: string }) => {
-    sendAdminMessage(`${name} has left`, "error", roomId);
+    sendAdminMessage(`${name} has left`, adminMessageTypes.ERROR, roomId);
     io.to(roomId).emit("room:playerDisconnected", name);
+  };
+  const newRoundHandler = ({
+    roomId,
+    roundNumber,
+  }: {
+    roomId: string;
+    roundNumber: number;
+  }) => {
+    sendAdminMessage(`round ${roundNumber}`, adminMessageTypes.INFO, roomId);
   };
 
   socket.on("getRooms", () => {
@@ -187,6 +202,7 @@ export default (io: any, socket: any, rooms: room[]) => {
 
   socket.on("room:playerJoinsGame", playerJoinsGame);
   socket.on("room:leave", removeRoom);
+  socket.on("room:newRound", newRoundHandler);
   socket.on("room:setNewWordToGuess", setNewWordToGuess);
   socket.on("room:getById", getById);
   socket.on("room:create", create);

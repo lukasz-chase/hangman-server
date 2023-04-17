@@ -195,6 +195,7 @@ export default (io: any, socket: any, rooms: room[]) => {
       adminMessageTypes.INFO,
       roomId
     );
+    io.to(roomId).emit("room:newRound");
   };
 
   socket.on("getRooms", () => {

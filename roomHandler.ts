@@ -190,7 +190,11 @@ export default (io: any, socket: any, rooms: room[]) => {
     roomId: string;
     roundNumber: number;
   }) => {
-    sendAdminMessage(`round ${roundNumber}`, adminMessageTypes.INFO, roomId);
+    sendAdminMessage(
+      `round ${roundNumber + 1} starts`,
+      adminMessageTypes.INFO,
+      roomId
+    );
   };
 
   socket.on("getRooms", () => {

@@ -79,7 +79,7 @@ export default (io: any, socket: any, rooms: room[]) => {
           roundTime: roundTime * 60,
         },
       ],
-      roundsNumber,
+      roundsNumber: Number(roundsNumber),
       currentRound: 0,
       creator: creator.id,
       playersLimit,

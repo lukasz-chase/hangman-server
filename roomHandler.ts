@@ -82,7 +82,7 @@ export default (io: any, socket: any, rooms: room[]) => {
       roundsNumber: Number(roundsNumber),
       currentRound: 0,
       creator: creator.id,
-      playersLimit,
+      playersLimit: Number(playersLimit),
       inGame: false,
       roundTime: roundTime * 60,
       messages: [],

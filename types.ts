@@ -45,6 +45,7 @@ export type room = {
   currentRound: number;
   creator: string;
   inGame: boolean;
+  createdAt: Date;
   messages: Message[];
 };
 export type roomPayload = {

@@ -6,8 +6,9 @@ import type {
   roomPayload,
   setWordToGuessPayload,
 } from "./types";
-import { sendAdminMessage } from "./index";
+import { sendAdminMessage } from "./utils/message";
 import { adminMessageTypes } from "./messagesHandler";
+import { sendRooms } from "./utils/room";
 
 //30 minutes in milliseconds
 const roomTimeoutDuration = 18000000;
@@ -15,12 +16,12 @@ const roomTimeoutDuration = 18000000;
 const chooseRandomWord = (language: string) =>
   words[language][Math.floor(Math.random() * words[language].length)];
 
-export default (io: any, socket: any, rooms: room[]) => {
+export default (io: any, socket: any, rooms: room[], page: number) => {
   const removeRoom = (roomId: string) => {
     const index = rooms.findIndex((room) => room.roomId === roomId);
     if (index !== -1) {
       rooms.splice(index, 1);
-      io.emit("getRooms", rooms);
+      sendRooms(rooms, page, io);
       io.to(roomId).emit("roomHasClosed");
     }
   };
@@ -34,7 +35,9 @@ export default (io: any, socket: any, rooms: room[]) => {
         sendAdminMessage(
           "room will close in 5 minutes",
           adminMessageTypes.ERROR,
-          roomId
+          roomId,
+          rooms,
+          io
         ),
       roomTimeoutDuration - 600000
     );
@@ -79,6 +82,7 @@ export default (io: any, socket: any, rooms: room[]) => {
           roundTime: roundTime * 60,
         },
       ],
+      createdAt: new Date(),
       roundsNumber: Number(roundsNumber),
       currentRound: 0,
       creator: creator.id,
@@ -93,10 +97,10 @@ export default (io: any, socket: any, rooms: room[]) => {
       private: privateRoom,
       ...commonRoomValues,
     };
-    rooms.push(newRoom);
-    io.emit("getRooms", rooms);
-    socket.join(roomId);
     io.to(roomId).emit("room:getById", newRoom);
+    rooms.push(newRoom);
+    sendRooms(rooms, page, io);
+    socket.join(roomId);
     callback(null, roomId);
     roomTimeout(roomId);
     roomHalfwayTimeout(roomId);
@@ -124,7 +128,13 @@ export default (io: any, socket: any, rooms: room[]) => {
       connectedToRoom: false,
       hasChosenWord: false,
     });
-    sendAdminMessage(`${name} has joined`, adminMessageTypes.INFO, roomId);
+    sendAdminMessage(
+      `${name} has joined`,
+      adminMessageTypes.INFO,
+      roomId,
+      rooms,
+      io
+    );
     currentRoom.vacant =
       room.playersLimit === currentRoom.players.length ? false : true;
 
@@ -148,7 +158,7 @@ export default (io: any, socket: any, rooms: room[]) => {
     if (index >= 0) {
       rooms[index] = payload;
       io.to(payload.roomId).emit("room:getById", payload);
-      socket.emit("getRooms", rooms);
+      sendRooms(rooms, page, io);
     }
   };
   const setNewWordToGuess = ({
@@ -180,7 +190,13 @@ export default (io: any, socket: any, rooms: room[]) => {
   };
 
   const playerLeft = ({ roomId, name }: { roomId: string; name: string }) => {
-    sendAdminMessage(`${name} has left`, adminMessageTypes.ERROR, roomId);
+    sendAdminMessage(
+      `${name} has left`,
+      adminMessageTypes.ERROR,
+      roomId,
+      rooms,
+      io
+    );
     io.to(roomId).emit("room:playerDisconnected", name);
   };
   const newRoundHandler = ({
@@ -193,13 +209,16 @@ export default (io: any, socket: any, rooms: room[]) => {
     sendAdminMessage(
       `round ${roundNumber + 1} starts`,
       adminMessageTypes.INFO,
-      roomId
+      roomId,
+      rooms,
+      io
     );
     io.to(roomId).emit("room:newRound");
   };
 
-  socket.on("getRooms", () => {
-    socket.emit("getRooms", rooms);
+  socket.on("getRooms", (newPage: number) => {
+    page = newPage;
+    sendRooms(rooms, page, io);
   });
   socket.on("startTheGame", (roomId: string) =>
     io.to(roomId).emit("startTheGame")

@@ -1,5 +1,13 @@
 import type { room } from "../types";
 
+export const adminMessageTypes: {
+  INFO: string;
+  ERROR: string;
+} = {
+  INFO: "info",
+  ERROR: "error",
+};
+
 export const sendAdminMessage = (
   message: string,
   type: string,

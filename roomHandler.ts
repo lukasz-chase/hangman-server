@@ -7,7 +7,7 @@ import type {
   setWordToGuessPayload,
 } from "./types";
 import { sendAdminMessage } from "./utils/message";
-import { adminMessageTypes } from "./messagesHandler";
+import { adminMessageTypes } from "./utils/message";
 import { sendRooms } from "./utils/room";
 
 //30 minutes in milliseconds

@@ -2,11 +2,10 @@ import dotenv from "dotenv";
 import express, { Application } from "express";
 import { createServer, Server as HTTPServer } from "http";
 import { Server, Socket } from "socket.io";
-import messagesHandler, { adminMessageTypes } from "./messagesHandler";
 import roomHandler from "./roomHandler";
 import type { room } from "./types";
 import { sendRooms } from "./utils/room";
-import { sendAdminMessage } from "./utils/message";
+import { adminMessageTypes, sendAdminMessage } from "./utils/message";
 
 dotenv.config();
 const app: Application = express();
@@ -22,7 +21,6 @@ let page = 1;
 
 io.on("connection", (socket: Socket) => {
   roomHandler(io, socket, rooms, page);
-  messagesHandler(io, socket, rooms);
   socket.on("disconnect", () => {
     const roomId: number = rooms.findIndex((room: room) =>
       room.rounds[room.currentRound].players.find(

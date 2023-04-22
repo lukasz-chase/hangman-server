@@ -33,6 +33,7 @@ export type Round = {
   language: string;
   vacant: boolean;
   wordToGuess: WordToGuess;
+  roundTime: number;
 };
 
 export type room = {
@@ -80,4 +81,10 @@ export type setWordToGuessPayload = {
   language: string;
   wordToGuess: WordToGuess;
   playerIndex: number;
+};
+export type guessLetterPayload = {
+  letter: string;
+  roomId: string;
+  playerId: string;
+  roundTime: number;
 };

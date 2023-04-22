@@ -215,7 +215,26 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     );
     io.to(roomId).emit("room:newRound");
   };
-
+  const guessLetterHandler = (letter: string, room: room, playerId: string) => {
+    const currentRound = room.rounds[room?.currentRound];
+    const player = currentRound.players.find((p) => p.id === playerId);
+    if (!player) return;
+    const guessedLetters = [...player.guessedLetters, letter];
+    const score =
+      player.score + (currentRound.wordToGuess.word.includes(letter) ? 10 : 0);
+    const updatedPlayer = {
+      ...player,
+      score,
+      guessedLetters,
+    };
+    room.rounds[room?.currentRound] = {
+      ...currentRound,
+      players: currentRound.players.map((p) =>
+        p.id === player.id ? updatedPlayer! : p
+      ),
+    };
+    io.to(room.roomId).emit("room:getById", room);
+  };
   socket.on("getRooms", (newPage: number) => {
     page = newPage;
     sendRooms(rooms, page, io);
@@ -223,32 +242,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
   socket.on("startTheGame", (roomId: string) =>
     io.to(roomId).emit("startTheGame")
   );
-  socket.on(
-    "room:guessLetter",
-    (letter: string, roomId: string, playerId: string) => {
-      const room = rooms.find((room: any) => room.roomId === roomId);
-      if (!room) return;
-      const currentRound = room.rounds[room?.currentRound];
-      const player = currentRound.players.find((p) => p.id === playerId);
-      if (!player) return;
-      const guessedLetters = [...player.guessedLetters, letter];
-      const score =
-        player.score +
-        (currentRound.wordToGuess.word.includes(letter) ? 10 : 0);
-      const updatedPlayer = {
-        ...player,
-        score,
-        guessedLetters,
-      };
-      room.rounds[room?.currentRound] = {
-        ...currentRound,
-        players: currentRound.players.map((p) =>
-          p.id === player.id ? updatedPlayer! : p
-        ),
-      };
-      io.to(roomId).emit("room:getById", room);
-    }
-  );
+  socket.on("room:guessLetter", guessLetterHandler);
   socket.on("room:playerJoinsGame", playerJoinsGame);
   socket.on("room:leave", removeRoom);
   socket.on("room:newRound", newRoundHandler);

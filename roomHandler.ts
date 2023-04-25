@@ -62,7 +62,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
         {
           round: 1,
           roundWinners: [],
-          wordToGuessChooser: customWord ? creator.id : "",
+          wordToGuessChooser: creator.id,
           players: [
             {
               name: creator.name,

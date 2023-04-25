@@ -30,6 +30,7 @@ export type Round = {
   players: Player[];
   playersInGame: string[];
   customWord: boolean;
+  difficulty: number;
   language: string;
   vacant: boolean;
   wordToGuess: WordToGuess;
@@ -61,6 +62,7 @@ export type roomPayload = {
   roundTime: number;
   roundsNumber: number;
   language: string;
+  difficulty: number;
   creator: {
     name: string;
     id: string;

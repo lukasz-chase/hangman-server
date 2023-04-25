@@ -53,6 +53,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
       privateRoom,
       roundTime,
       roundsNumber,
+      difficulty,
     }: roomPayload,
     callback: any
   ) => {
@@ -80,6 +81,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
           customWord,
           language,
           vacant: true,
+          difficulty,
           roundTime: roundTime * 60,
         },
       ],

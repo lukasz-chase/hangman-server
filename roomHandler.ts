@@ -170,6 +170,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     wordToGuess,
     language,
     playerIndex,
+    difficulty,
   }: setWordToGuessPayload) => {
     const index = rooms.findIndex((r) => r.roomId === roomId);
     const room = rooms[index];
@@ -180,6 +181,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
         wordToGuess: word,
         language,
         customWord,
+        difficulty,
       };
       room.rounds[room.currentRound].players[playerIndex].hasChosenWord = true;
       io.to(room.roomId).emit("room:getById", room);

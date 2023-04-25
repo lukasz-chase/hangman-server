@@ -83,6 +83,7 @@ export type setWordToGuessPayload = {
   language: string;
   wordToGuess: WordToGuess;
   playerIndex: number;
+  difficulty: number;
 };
 export type guessLetterPayload = {
   letter: string;

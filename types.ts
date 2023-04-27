@@ -12,6 +12,7 @@ type WordToGuess = {
   word: string;
   translation: string;
   original: string;
+  category: string;
 };
 export type Message = {
   playerName: string;
@@ -54,11 +55,7 @@ export type roomPayload = {
   privateRoom: boolean;
   playersLimit: number;
   customWord: boolean;
-  word: {
-    word: string;
-    translation: string;
-    original: string;
-  };
+  word: WordToGuess;
   roundTime: number;
   roundsNumber: number;
   language: string;

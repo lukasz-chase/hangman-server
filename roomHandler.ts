@@ -224,7 +224,6 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     letter,
     roomId,
     playerId,
-    roundTime,
   }: guessLetterPayload) => {
     const room = rooms.find((room) => room.roomId === roomId);
     if (!room) return;
@@ -241,7 +240,6 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     };
     room.rounds[room?.currentRound] = {
       ...currentRound,
-      roundTime,
       players: currentRound.players.map((p) =>
         p.id === player.id ? updatedPlayer! : p
       ),
@@ -255,6 +253,12 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
   socket.on("startTheGame", (roomId: string) =>
     io.to(roomId).emit("startTheGame")
   );
+  const gameTimeHandler = (roundTime: number, roomId: string) => {
+    const room = rooms.find((room: room) => room.roomId === roomId);
+    if (!room) return;
+    room.rounds[room.currentRound].roundTime = roundTime;
+  };
+  socket.on("room:setGameTime", gameTimeHandler);
   socket.on("room:guessLetter", guessLetterHandler);
   socket.on("room:playerJoinsGame", playerJoinsGame);
   socket.on("room:leave", removeRoom);

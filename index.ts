@@ -28,23 +28,22 @@ io.on("connection", (socket: Socket) => {
       )
     );
     const room: room = rooms[roomId];
-    const currentRoom = room?.rounds[room.currentRound];
+    const currentRound = room?.rounds[room.currentRound];
     if (!room) return;
-    const player: any = currentRoom.players.find(
+    const player: any = currentRound.players.find(
       (player: any) => player.socketId === socket.id
     );
 
-    currentRoom.players = currentRoom.players.filter(
+    currentRound.players = currentRound.players.filter(
       (player: any) => player.socketId !== socket.id
     );
     rooms[roomId] = room;
 
-    if (currentRoom.players.length === 0 || player.id === room.creator) {
+    if (currentRound.players.length === 0 || player.id === room.creator) {
       rooms.splice(roomId, 1);
       sendRooms(rooms, page, io);
       io.to(room.roomId).emit("roomHasClosed");
     }
-    io.to(room.roomId).emit("room:getById", room);
     sendAdminMessage(
       `${player.name} has left`,
       adminMessageTypes.ERROR,

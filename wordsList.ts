@@ -8,7 +8,7 @@ interface Words {
 }
 
 const words: Words = {
-  english: [
+  angielski: [
     {
       word: "chair",
       translation: "krzesło",
@@ -299,7 +299,7 @@ const words: Words = {
       category: "Przedmiot",
     },
   ],
-  spanish: [
+  hiszpanski: [
     {
       word: "sillon",
       translation: "fotel",
@@ -698,7 +698,7 @@ const words: Words = {
       category: "motywacja",
     },
   ],
-  polish: [
+  polski: [
     {
       word: "samolot",
       translation: "samolot",
@@ -917,7 +917,7 @@ const words: Words = {
       category: "budynek",
     },
   ],
-  french: [
+  francuski: [
     {
       word: "bonjour",
       translation: "witaj",
@@ -1119,7 +1119,7 @@ const words: Words = {
       category: "przedmiot",
     },
   ],
-  german: [
+  niemiecki: [
     {
       word: "apfel",
       translation: "jabłko",

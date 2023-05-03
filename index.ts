@@ -45,7 +45,7 @@ io.on("connection", (socket: Socket) => {
       io.to(room.roomId).emit("roomHasClosed");
     }
     sendAdminMessage(
-      `${player.name} has left`,
+      `${player.name} wyszedł`,
       adminMessageTypes.ERROR,
       room.roomId,
       rooms,

@@ -10,6 +10,7 @@ import type {
 import { sendAdminMessage } from "./utils/message";
 import { adminMessageTypes } from "./utils/message";
 import { sendRooms } from "./utils/room";
+import { pointsCalculator } from "./utils/game";
 
 //30 minutes in milliseconds
 const roomTimeoutDuration = 18000000;
@@ -34,7 +35,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     setTimeout(
       () =>
         sendAdminMessage(
-          "room will close in 5 minutes",
+          "pokój się zamknie za 5 minut",
           adminMessageTypes.ERROR,
           roomId,
           rooms,
@@ -114,7 +115,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     const room = rooms.find((room: room) => room.roomId === roomId);
     if (!room) return callback({ error: true });
     const currentRoom = room.rounds[room.currentRound];
-    if (!currentRoom.vacant) return callback({ error: "room is full" });
+    if (!currentRoom.vacant) return callback({ error: "pokój jest pełny" });
     if (currentRoom.players.find((player) => player.id === id)) {
       io.to(room.roomId).emit("room:getById", room);
       currentRoom.vacant =
@@ -132,7 +133,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
       hasChosenWord: false,
     });
     sendAdminMessage(
-      `${name} has joined`,
+      `${name} dołączył`,
       adminMessageTypes.INFO,
       roomId,
       rooms,
@@ -149,7 +150,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
 
   const playerJoinsGame = ({ roomId, id }: { roomId: string; id: string }) => {
     const room = rooms.find((room: room) => room.roomId === roomId);
-    if (!room) return new Error("there is no room with that id");
+    if (!room) return new Error("nie ma pokoju z takim id");
     room.rounds[room.currentRound].playersInGame.push(id);
     io.to(roomId).emit("room:getById", room);
   };
@@ -196,7 +197,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
 
   const playerLeft = ({ roomId, name }: { roomId: string; name: string }) => {
     sendAdminMessage(
-      `${name} has left`,
+      `${name} wyszedł`,
       adminMessageTypes.ERROR,
       roomId,
       rooms,
@@ -212,7 +213,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     roundNumber: number;
   }) => {
     sendAdminMessage(
-      `round ${roundNumber + 1} starts`,
+      `runda ${roundNumber + 1} zaczyna się`,
       adminMessageTypes.INFO,
       roomId,
       rooms,
@@ -231,8 +232,13 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     const player = currentRound.players.find((p) => p.id === playerId);
     if (!player) return;
     const guessedLetters = [...player.guessedLetters, letter];
-    const score =
-      player.score + (currentRound.wordToGuess.word.includes(letter) ? 10 : 0);
+    const score = pointsCalculator({
+      currentRoundTime: currentRound.roundTime,
+      roundTime: room.roundTime,
+      letter,
+      score: player.score,
+      wordToGuess: currentRound.wordToGuess.word,
+    });
     const updatedPlayer = {
       ...player,
       score,

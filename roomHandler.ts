@@ -58,7 +58,6 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
     }: roomPayload,
     callback: any
   ) => {
-    const wordToGuess = customWord ? word : chooseRandomWord(language);
     const commonRoomValues = {
       rounds: [
         {
@@ -78,7 +77,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
             },
           ],
           playersInGame: [],
-          wordToGuess,
+          wordToGuess: word,
           customWord,
           language,
           vacant: true,

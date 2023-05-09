@@ -37,6 +37,7 @@ io.on("connection", (socket: Socket) => {
     currentRound.players = currentRound.players.filter(
       (player: any) => player.socketId !== socket.id
     );
+    currentRound.vacant = true;
     rooms[roomId] = room;
 
     if (currentRound.players.length === 0 || player.id === room.creator) {

@@ -57,4 +57,4 @@ io.on("connection", (socket: Socket) => {
 });
 
 const port: string | number = process.env.PORT || 8080;
-httpServer.listen(port, () => console.log(`Listening on port ${port}`));
+httpServer.listen(port, () => console.log(`Nasluchuje na porcie ${port}`));

@@ -202,6 +202,7 @@ export default (io: any, socket: any, rooms: room[], page: number) => {
       rooms,
       io
     );
+    socket.leave(roomId);
     io.to(roomId).emit("room:playerDisconnected", name);
   };
   const newRoundHandler = ({
